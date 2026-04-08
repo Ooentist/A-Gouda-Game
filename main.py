@@ -1,2 +1,4 @@
+from game import *
 if __name__=='__main__':
-    print('Begin your decent')
+    game=Game(600,600)
+    game.game_looop()
