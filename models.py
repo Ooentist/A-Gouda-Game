@@ -1,4 +1,4 @@
-import pygame
+import pygame,random
 class Object:
     def __init__(self,x,y,tilewid,tilehei,col):
         self. tilewid =tilewid
@@ -46,3 +46,20 @@ class Wall(Object):
         pass
     def draw(self,surface):
         pygame.draw.rect(surface,self.col,(self.x*self.tilewid,self.y*self.tilehei,self.tilewid,self.tilehei))
+class Enemy(Object):
+    def __init__(self,x,y,tilewid,tilehei,col=(255,0,0)):
+        super().__init__(x,y,tilewid,tilehei,col)
+    def move(self,game_map):
+        self.moveran(game_map)
+    def moveran(self,game_map):
+        directions=[(0,-1),(0,1),(-1,0),(0,-1)]
+        random.shuffle(directions)
+        for dx,dy in directions:
+            if 0<=self.x+dx<len(game_map) and 0<=self.y+dy<len(game_map[0]):
+                if game_map[self.x+dx][self.y+dy]==0:
+                    game_map[self.x+dx][self.y+dy]=game_map[self.x][self.y]
+                    game_map[self.x][self.y]==0
+                    self.x+=dx
+                    self.y+=dy
+                    break
+                    
