@@ -77,6 +77,8 @@ class Game():
 
 
     def _update(self):
-        pass
+        for enemy in self.enemies:
+            enemy.update()
+        self.player.update()  
     
 
