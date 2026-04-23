@@ -53,6 +53,8 @@ class Game():
             self._handle_inputs()
             self._update()
             self._draw()
+            clock=pygame.time.Clock()
+            clock.tick(60)
     def _draw(self):
         self.display.fill((40,40,40))
         for col in range(self.gridcol):

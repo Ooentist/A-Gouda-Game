@@ -2,7 +2,7 @@ import pygame,random
 from spritesheet import *
 
 Ppath='./assets/3 Dude_Monster'
-move_frames=60
+move_frames=20
 class Object:
     def __init__(self,x,y,tilewid,tilehei,col):
         self.xmovestacks=0
@@ -35,12 +35,25 @@ class Player(Object):
     def __init__(self,x,y,tilewid,tilehei,col=(255,255,255)):
         super().__init__(x,y,tilewid,tilehei,col)
         scale=(tilewid,tilehei)
-        self.animations={'idle':Animation(loadsheet(Ppath+'/Dude_Monster_Idle_4.png',32,32,scale),speed=8),'walk':Animation(loadsheet(Ppath+'/Dude_Monster_Walk_6.png',32,32,scale),speed=8)}
+        self.animations={'idle':Animation(loadsheet(Ppath+'/Dude_Monster_Idle_4.png',32,32,scale),speed=10),'walk':Animation(loadsheet(Ppath+'/Dude_Monster_Walk_6.png',32,32,scale),speed=8)}
         self.state='idle'
         self.direction='right'    
     def draw(self,surface):
-        pygame.draw.rect(surface,self.col,(self.drawx*self.tilewid,self.drawy*self.tilehei,self.tilewid,self.tilehei))
-
+        frame=self.animations[self.state].getframe()
+        if self.direction=='left':
+            frame=pygame.transform.flip(frame,True,False)
+        surface.blit(frame,(self.drawx*self.tilewid,self.drawy*self.tilehei))
+    def update(self):
+        super().update()
+        if abs(self.x-self.drawx)>0.01 or abs(self.y-self.drawy)>0.01:
+            if self.state!='walk':
+                self.state='walk'
+                self.animations[self.state].reset()
+        else:
+            if self.state!='idle':
+                self.state='idle'
+                self.animations[self.state].reset()
+        self.animations[self.state].update()
     def handeinput(self,event,map,num_cols,num_rows):
         moved=False
         newx=self.x
@@ -57,9 +70,11 @@ class Player(Object):
             elif event.key in (pygame.K_LEFT,pygame.K_a):
                 newx-=1
                 newoffx+=1
+                self.direction='left'
             elif event.key in (pygame.K_RIGHT,pygame.K_d):
                 newx+=1
                 newoffx-=1
+                self.direction='right'
             
         if newx >=0 and newx<num_cols and newy>=0 and newy<num_rows:
             if  map[newx][newy]==0:
