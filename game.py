@@ -16,6 +16,7 @@ class Game():
         self.gridrow=20
         self.tilewid=self.wid/self.gridcol
         self.tilehei=self.hei/self.gridrow
+        self.loadtile()
         self.initgamejects()
     def initgamejects(self):
         self.map=[[0 for _ in range(self.gridcol)] for _ in range(self.gridcol)]
@@ -42,6 +43,7 @@ class Game():
             x,y=self.findtile(1,3,maxx,maxy)
             self.map[x][y]=Enemy(x,y,self.tilewid,self.tilehei)
             self.enemies.append(self.map[x][y])
+        self.bake()
     def findtile(self,minx,miny,maxx,maxy):
         x,y=0,0
         while self.map [x][y]!=0:
@@ -56,16 +58,11 @@ class Game():
             clock=pygame.time.Clock()
             clock.tick(60)
     def _draw(self):
-        self.display.fill((40,40,40))
-        for col in range(self.gridcol):
-            for row in range(self.gridrow):
-                rect=(col*self.tilewid,row*self.tilehei,self.tilewid,self.tilehei)
-                if isinstance(self.map[col][row],Wall):
-                    self.map[col][row].draw(self.display)
-                if isinstance(self.map[col][row],Enemy):
-                    self.map[col][row].draw(self.display)
-                pygame.draw.rect(self.display,'black',rect,1)
+        self.display.blit(self.tileleayer,(0,0))
+
         self.player.draw(self.display)
+        for enemy in self.enemies:
+            enemy.draw(self.display)
         pygame.display.update()
     def _handle_inputs(self):
         for event in pygame.event.get():
@@ -82,5 +79,19 @@ class Game():
         for enemy in self.enemies:
             enemy.update()
         self.player.update()  
-    
-
+    def loadtile(self):
+        w,h=int(self.tilewid),int(self.tilehei)
+        self.flrtile=pygame.image.load(flrpath).convert()
+        self.flrtile=pygame.transform.scale(self.flrtile,(w,h))
+        w,h=int(self.tilewid),int(self.tilehei)
+        self.waltile=pygame.image.load(wallpath).convert()
+        self.waltile=pygame.transform.scale(self.waltile,(w,h))
+    def bake(self):
+        self.tileleayer=pygame.Surface((self.wid,self.hei))
+        for col in range(self.gridcol):
+            for row in range(self.gridrow):
+                if isinstance(self.map[col][row],Wall):
+                    tile=self.waltile
+                else:
+                    tile=self.flrtile
+                self.tileleayer.blit(tile,(col*self.tilewid,row*self.tilehei))
