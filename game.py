@@ -16,6 +16,7 @@ class Game():
         self.gridrow=20
         self.tilewid=self.wid/self.gridcol
         self.tilehei=self.hei/self.gridrow
+        self.pen=False
         self.loadtile()
         self.initgamejects()
     def initgamejects(self):
