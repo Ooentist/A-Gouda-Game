@@ -17,8 +17,14 @@ class Game():
         self.tilewid=self.wid/self.gridcol
         self.tilehei=self.hei/self.gridrow
         self.pen=False
+        self.pend=False
+        self.maxlives=3
+        self.lives=self.maxlives
+        self.game_over=False
+        self.font=pygame.font.SysFont(None,36)
         self.loadtile()
         self.initgamejects()
+        
     def initgamejects(self):
         self.map=[[0 for _ in range(self.gridcol)] for _ in range(self.gridcol)]
         self.player=Player(INITX,INITY,self.tilewid,self.tilehei)
@@ -44,6 +50,8 @@ class Game():
             x,y=self.findtile(1,3,maxx,maxy)
             self.map[x][y]=Enemy(x,y,self.tilewid,self.tilehei)
             self.enemies.append(self.map[x][y])
+            holex,holey=self.findtile(1,1,self.gridcol-2,self.gridrow-2)
+            self.hole=Hole(holex,holey,self.tilewid,self.tilehei)
         self.bake()
     def findtile(self,minx,miny,maxx,maxy):
         x,y=0,0
@@ -62,8 +70,10 @@ class Game():
         self.display.blit(self.tileleayer,(0,0))
 
         self.player.draw(self.display)
+        self.hole.draw(self.display)
         for enemy in self.enemies:
             enemy.draw(self.display)
+        
         pygame.display.update()
     def _handle_inputs(self):
         for event in pygame.event.get():
@@ -74,12 +84,29 @@ class Game():
                 if moved:
                     for enemy in self.enemies:
                         enemy.move(self.map)
+                        if enemy.x==self.player.x and enemy.y==self.player.y:
+                            self.pend=True
+                    if self.player.x==self.hole.x and self.player.y==self.hole.y and not self.pend:
+                        self.pen=True
 
 
     def _update(self):
-        for enemy in self.enemies:
-            enemy.update()
-        self.player.update()  
+        if self.game_over:
+            return
+        self.player.update()
+        if self.pend and self. player.state=='idle':
+            self.dend=False
+            self.player.die()
+        if self.pen and self.player.state=='idle':
+            self.pen=False
+            self.player.fellinhole()
+        if self.player.fell:
+            self.player.fell=False
+            self.nextlevel()
+        if not self.player.falling:
+            for enemy in self.enemies:
+                enemy.update()
+
     def loadtile(self):
         w,h=int(self.tilewid),int(self.tilehei)
         self.flrtile=pygame.image.load(flrpath).convert()
@@ -96,3 +123,10 @@ class Game():
                 else:
                     tile=self.flrtile
                 self.tileleayer.blit(tile,(col*self.tilewid,row*self.tilehei))
+    def nextlevel(self):
+            self.pen=False
+            self.map=[[0 for _ in range(self.gridrow)]for _ in range(self.gridcol)]
+            self.enemies=[]
+            self.map[self.player.x][self.player.y]=self.player
+            self.generatelevel(60,5)
+            print(self.map)

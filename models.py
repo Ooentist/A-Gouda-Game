@@ -8,16 +8,17 @@ wallpath='./assets/floor.jpg'
 holepath='./assets/hole.png'
 move_frames=20
 class Object:
-    def __init__(self,x,y,tilewid,tilehei,col):
+    def __init__(self,x,y,tilewid,tilehei,col='brown'):
         self.xmovestacks=0
         self.ymovestacks=0
         self. tilewid =tilewid
         self.tilehei  =tilehei
-        self.col  =col
+        self.col  ='brown'
         self.drawx=x
         self.drawy=y
         self.y  =y
         self.x  =x
+        self.deaddone=False
     def draw(self,surface):
         pygame.draw.rect(surface,self.col,(self.x*self.tilewid,self.y*self.tilehei,self.tilewid,self.tilehei))
     def update(self):
@@ -39,7 +40,7 @@ class Player(Object):
     def __init__(self,x,y,tilewid,tilehei,col=(255,255,255)):
         super().__init__(x,y,tilewid,tilehei,col)
         scale=(tilewid,tilehei)
-        self.animations={'idle':Animation(loadsheet(Ppath+'/Dude_Monster_Idle_4.png',32,32,scale),speed=10),'walk':Animation(loadsheet(Ppath+'/Dude_Monster_Walk_6.png',32,32,scale),speed=8),'jump':Animation(loadsheet(Ppath+'/Dude_Monster_Jump_8.png',32,32,scale),speed=8),'dust':Animation(loadsheet(Ppath+'/Double_Jump_Dust_5.png',32,32,scale),speed=8)}
+        self.animations={'idle':Animation(loadsheet(Ppath+'/Dude_Monster_Idle_4.png',32,32,scale),speed=10),'walk':Animation(loadsheet(Ppath+'/Dude_Monster_Walk_6.png',32,32,scale),speed=8),'jump':Animation(loadsheet(Ppath+'/Dude_Monster_Jump_8.png',32,32,scale),speed=8),'dust':Animation(loadsheet(Ppath+'/Double_Jump_Dust_5.png',32,32,scale),speed=8),'dead':Animation(loadsheet(Ppath+'/Dude_Monster_Death_8.png',32,32,scale),speed=6)}
         self.state='idle'
         self.direction='right'   
         self.falling=False
@@ -55,6 +56,13 @@ class Player(Object):
         self.state='jump'
         self.animations['jump'].getframe()
     def update(self):
+        if self.state  == 'dead' and not self.deaddone:
+            anim=self.animations[self.state]
+            anim.update()
+            if anim.curframe==len(anim.frames)-1 and anim.timer==0:
+                self.deaddone=True
+                self.state='idle'
+            return
         if self.falling:
             anim=self.animations[self.state]
             anim.update()
@@ -79,6 +87,11 @@ class Player(Object):
                 self.state='idle'
                 self.animations[self.state].reset()
         self.animations[self.state].update()
+    def die(self):
+        self.state='dead'
+        self.deaddone=False
+        self.animations['dead'].reset()
+        
     def handeinput(self,event,map,num_cols,num_rows):
         moved=False
         if self.falling==True:
@@ -139,7 +152,7 @@ class Enemy(Object):
         random.shuffle(directions)
         for dx,dy in directions:
             if 0<=self.x+dx<len(game_map) and 0<=self.y+dy<len(game_map[0]):
-                if game_map[self.x+dx][self.y+dy]==0:
+                if game_map[self.x+dx][self.y+dy]==0 or isinstance(game_map[self.x+dx][self.y+dy],Player):
                     game_map[self.x+dx][self.y+dy]=game_map[self.x][self.y]
                     game_map[self.x][self.y]=0
                     self.x+=dx
@@ -162,7 +175,7 @@ class Enemy(Object):
                 self.state='idle'
                 self.animations[self.state].reset()
         self.animations[self.state].update()
-class Hole(object):
+class Hole(Object):
     def __init__(self,x,y,tilewid,tilehei):
         super().__init__(x,y,tilewid,tilehei)
         img=pygame.image.load(holepath)
@@ -170,4 +183,4 @@ class Hole(object):
     def update(self):
         pass
     def draw(self,surface):
-        surface.blit(self.sprite,(self.x,self.y))
+        surface.blit(self.sprite,(self.x*self.tilewid,self.y*self.tilehei))
