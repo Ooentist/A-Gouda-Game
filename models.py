@@ -69,13 +69,13 @@ class Player(Object):
             if self.state=='jump':
                 if anim.curframe==len(anim.frames)-1 and anim.timer==0:
                     self.state='dust'
-                    self.animations[self.state].reset
+                    self.animations[self.state].reset()
             elif self.state=='dust':
                 if anim.curframe==len(anim.frames)-1 and anim.timer==0:
                     self.falling=False
                     self.fell=True
                     self.state='idle'
-                    self.animations[self.state].reset
+                    self.animations[self.state].reset()
             return
         super().update()
         if abs(self.x-self.drawx)>0.01 or abs(self.y-self.drawy)>0.01:
@@ -183,4 +183,4 @@ class Hole(Object):
     def update(self):
         pass
     def draw(self,surface):
-        surface.blit(self.sprite,(self.x*self.tilewid,self.y*self.tilehei))
+        surface.blit(self.sprite,(self.x*self.tilewid,self.y*self.tilehei+self.tilehei/3))
