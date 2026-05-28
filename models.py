@@ -3,7 +3,7 @@ from spritesheet import *
 
 Ppath='./assets/3 Dude_Monster'
 enpath='./assets/2 Owlet_Monster'
-flrpath='./assets/newwall.png'
+flrpath='./assets/newflr.png'
 wallpath='./assets/floor.jpg'
 holepath='./assets/hole.png'
 move_frames=20

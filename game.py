@@ -1,5 +1,6 @@
 import pygame,random
 from models import *
+from utils import *
 FPS=60
 INITX=2
 INITY=7
@@ -21,6 +22,7 @@ class Game():
         self.lives=self.maxlives
         self.spawnx=INITX
         self.spawny=INITY
+        self.level=1
         self.font=pygame.font.SysFont(None,36)
         self.loadtile()
         self.initgamejects()
@@ -31,6 +33,7 @@ class Game():
         self.map[self.spawnx][self.spawny]=self.player
         self.enemies=[]
         self.generatelevel(60,5)
+        bfs(self.map, (self.player.x,self.player.y),((self.enemies[0].x),(self.enemies[0].y)),len(self.map),len(self.map[0]))
     def generatelevel(self,walls,enemies):
         for col in range(self.gridcol):
             self.map[col][0]=Wall(col,0,self.tilewid,self.tilehei)
@@ -74,6 +77,7 @@ class Game():
         self.player.draw(self.display)
         for enemy in self.enemies:
             enemy.draw(self.display)
+        self.drawhud()
         
         pygame.display.update()
     def _handle_inputs(self):
@@ -136,6 +140,7 @@ class Game():
             self.map[self.player.x][self.player.y]=self.player
             self.generatelevel(60,5)
             self.state='game'
+            self.level+=1
     def resetmap(self):
         self.map=[[0 for _ in range(self.gridrow)]for _ in range(self.gridcol)]
     def loselife(self):
@@ -156,3 +161,8 @@ class Game():
         self.player.falling
         self.player.fell
         self.map[self.player.x][self.player.y]=self.player
+    def drawhud(self):
+        lives=self.font.render(f'Lives:{self.lives}',True,'white')
+        self.display.blit(lives,(10,10))
+        level=self.font.render(f'Level:{self.level}',True,'white')
+        self.display.blit(level,(10,50))
