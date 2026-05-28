@@ -7,25 +7,25 @@ def bfs(map,start,end,numrows,numcols):
         x,y=queue.pop(0)
         if visited[x+1][y]==None and not isinstance(map[x+1][y],Wall):
             visited[x+1][y]=(1,0)
-            if visited[x+1][y]==end:
+            if x+1==end[0] and y==end[1]:
                 print('hi')
                 return
             queue.append((x+1,y))
         if visited[x-1][y]==None and not isinstance(map[x-1][y],Wall):
             visited[x-1][y]=(-1,0)
-            if visited[x-1][y]==end:
+            if x-1==end[0] and y==end[1]:
                 print('hi')
                 return
             queue.append((x-1,y))
         if visited[x][y+1]==None and not isinstance(map[x][y+1],Wall):
             visited[x][y+1]=(0,1)
-            if visited[x][y+1]==end:
+            if x==end[0] and y+1==end[1]:
                 print('hi')
                 return
             queue.append((x,y+1))
         if visited[x][y-1]==None and not isinstance(map[x][y-1],Wall):
             visited[x][y-1]=(0,-1)
-            if visited[x][y-1]==end:
+            if x==end[0] and y-1==end[1]:
                 print('hi')
                 return
             queue.append((x,y-1))
