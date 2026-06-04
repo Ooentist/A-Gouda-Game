@@ -33,7 +33,6 @@ class Game():
         self.map[self.spawnx][self.spawny]=self.player
         self.enemies=[]
         self.generatelevel(60,5)
-        bfs(self.map, (self.player.x,self.player.y),((self.enemies[0].x),(self.enemies[0].y)),len(self.map),len(self.map[0]))
     def generatelevel(self,walls,enemies):
         for col in range(self.gridcol):
             self.map[col][0]=Wall(col,0,self.tilewid,self.tilehei)
@@ -88,7 +87,7 @@ class Game():
                 moved=self.player.handeinput(event,self.map,self.gridcol,self.gridrow)
                 if moved:
                     for enemy in self.enemies:
-                        enemy.move(self.map)
+                        enemy.move(self.map,self.player.x,self.player.y)
                         if enemy.x==self.player.x and enemy.y==self.player.y:
                             self.state='death'
                             return
@@ -154,8 +153,8 @@ class Game():
         self.map[self.player.x][self.player.y]
         self.player.x=self.spawnx
         self.player.y=self.spawny
-        self.player.drawx=self.spawnx*self.tilewid
-        self.player.drawy=self.spawny*self.tilehei
+        self.player.drawx=self.spawnx
+        self.player.drawy=self.spawny
         self.player.state='idle'
         self.player.deaddone
         self.player.falling

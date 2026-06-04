@@ -1,6 +1,6 @@
 import pygame,random
 from spritesheet import *
-
+from utils import *
 Ppath='./assets/3 Dude_Monster'
 enpath='./assets/2 Owlet_Monster'
 flrpath='./assets/newflr.png'
@@ -140,8 +140,7 @@ class Enemy(Object):
         self.animations={'idle':Animation(loadsheet(enpath+'/Owlet_Monster_Idle_4.png',32,32,scale),speed=10),'walk':Animation(loadsheet(enpath+'/Owlet_Monster_Walk_6.png',32,32,scale),speed=8)}
         self.state='idle'
         self.direction='right'   
-    def move(self,game_map):
-        self.moveran(game_map)
+    
     def draw(self,surface):
         frame=self.animations[self.state].getframe()
         if self.direction=='left':
@@ -164,6 +163,26 @@ class Enemy(Object):
                     self.xmovestacks+=dx*move_frames*-1
                     self.ymovestacks+=dy*move_frames*-1
                     break
+    def moves(self,game_map,px,py):
+        directions=[bfs(game_map,(self.x,self.y),(px,py),Wall)]
+        random.shuffle(directions)
+        if directions[0]==False:
+            return False
+        for dx,dy in directions:
+            if 0<=self.x+dx<len(game_map) and 0<=self.y+dy<len(game_map[0]):
+                if game_map[self.x+dx][self.y+dy]==0 or isinstance(game_map[self.x+dx][self.y+dy],Player):
+                    game_map[self.x+dx][self.y+dy]=game_map[self.x][self.y]
+                    game_map[self.x][self.y]=0
+                    self.x+=dx
+                    self.y+=dy
+                    if dx>0:
+                        self.direction='right'
+                    if dx<0:
+                        self.direction='left'
+                    self.xmovestacks+=dx*move_frames*-1
+                    self.ymovestacks+=dy*move_frames*-1
+                    break
+
     def update(self):
         super().update()
         if abs(self.x-self.drawx)>0.01 or abs(self.y-self.drawy)>0.01:
@@ -175,6 +194,9 @@ class Enemy(Object):
                 self.state='idle'
                 self.animations[self.state].reset()
         self.animations[self.state].update()
+    def move(self,game_map,px,py):
+        
+        self.moves(game_map,px,py)
 class Hole(Object):
     def __init__(self,x,y,tilewid,tilehei):
         super().__init__(x,y,tilewid,tilehei)
