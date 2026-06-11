@@ -32,29 +32,35 @@ class Game():
         self.player=Player(self.spawnx,self.spawny,self.tilewid,self.tilehei)
         self.map[self.spawnx][self.spawny]=self.player
         self.enemies=[]
-        self.generatelevel(60,5)
+        self.generatelevel(60,5+self.level)
     def generatelevel(self,walls,enemies):
-        for col in range(self.gridcol):
-            self.map[col][0]=Wall(col,0,self.tilewid,self.tilehei)
-            self.map[col][-1]=Wall(col,self.gridrow-1,self.tilewid,self.tilehei)
-        for row in range(self.gridrow):
-            self.map[0][row]=Wall(0,row,self.tilewid,self.tilehei)
-            self.map[-1][row]=Wall(self.gridrow-1,row,self.tilewid,self.tilehei) 
-        for _ in range(walls):
-            x,y=0,0
-            while self.map [x][y]!=0:
-                x=random.randint(1, self.gridcol-2)
-                y=random.randint(1, self.gridrow-2)
-            self.map[x][y]=Wall(x,y,self.tilewid,self.tilehei)
-        for _ in range(enemies):
-            maxx=self.gridcol-2
-            maxy=self.gridrow-2
-            x,y=self.findtile(1,3,maxx,maxy)
-            self.map[x][y]=Enemy(x,y,self.tilewid,self.tilehei)
-            self.enemies.append(self.map[x][y])
-            holex,holey=self.findtile(1,1,self.gridcol-2,self.gridrow-2)
-            self.hole=Hole(holex,holey,self.tilewid,self.tilehei)
-        self.bake()
+        work=False
+        while work ==False:
+            for col in range(self.gridcol):
+                self.map[col][0]=Wall(col,0,self.tilewid,self.tilehei)
+                self.map[col][-1]=Wall(col,self.gridrow-1,self.tilewid,self.tilehei)
+            for row in range(self.gridrow):
+                self.map[0][row]=Wall(0,row,self.tilewid,self.tilehei)
+                self.map[-1][row]=Wall(self.gridrow-1,row,self.tilewid,self.tilehei) 
+            for _ in range(walls):
+                x,y=0,0
+                while self.map [x][y]!=0:
+                    x=random.randint(1, self.gridcol-2)
+                    y=random.randint(1, self.gridrow-2)
+                self.map[x][y]=Wall(x,y,self.tilewid,self.tilehei)
+            for _ in range(enemies):
+                maxx=self.gridcol-2
+                maxy=self.gridrow-2
+                x,y=self.findtile(1,3,maxx,maxy)
+                self.map[x][y]=Enemy(x,y,self.tilewid,self.tilehei)
+                self.enemies.append(self.map[x][y])
+                holex,holey=self.findtile(1,1,self.gridcol-2,self.gridrow-2)
+                self.hole=Hole(holex,holey,self.tilewid,self.tilehei)
+            self.bake()
+            if bfs(self.map,(self.player.x,self.player.y),(self.hole.x,self.hole.y),Wall)==False:
+                work=False
+            else:
+                work=True
     def findtile(self,minx,miny,maxx,maxy):
         x,y=0,0
         while self.map [x][y]!=0:
@@ -77,6 +83,9 @@ class Game():
         for enemy in self.enemies:
             enemy.draw(self.display)
         self.drawhud()
+        if self.state=='game over':
+            self.drawgameover()
+        self.drawdark()
         
         pygame.display.update()
     def _handle_inputs(self):
@@ -126,6 +135,7 @@ class Game():
         self.waltile=pygame.transform.scale(self.waltile,(w,h))
     def bake(self):
         self.tileleayer=pygame.Surface((self.wid,self.hei))
+
         for col in range(self.gridcol):
             for row in range(self.gridrow):
                 if isinstance(self.map[col][row],Wall):
@@ -160,8 +170,29 @@ class Game():
         self.player.falling
         self.player.fell
         self.map[self.player.x][self.player.y]=self.player
+        for enemy in self.enemies:
+            if enemy.x==self.player.x and enemy.y==self.player.y:
+                x,y=self.findtile(1,1,self.gridcol-2,self.gridrow-2)
+                enemy.x,enemy.y=x,y
+                enemy.drawx,enemy.drawy=x,y
+                self.map[enemy.x][enemy.y]=enemy
+                
     def drawhud(self):
         lives=self.font.render(f'Lives:{self.lives}',True,'white')
         self.display.blit(lives,(10,10))
         level=self.font.render(f'Level:{self.level}',True,'white')
         self.display.blit(level,(10,50))
+    def drawgameover(self):
+        bg=pygame.Surface((self.wid,self.hei),pygame.SRCALPHA)
+        bg.fill((100,0,0,160))
+        self.display.blit(bg,(0,0))
+        gameovertext=self.font.render('Game Over',True,'white')
+        self.display.blit(gameovertext,(self.wid//2-gameovertext.get_width()//2,self.hei//2-gameovertext.get_height()//2))
+    def drawdark(self):
+        dark=pygame.Surface((self.tilewid,self.tilehei),pygame.SRCALPHA)
+        for col in range(self.gridcol):
+            for row in range(self.gridrow):
+                dark.fill((0,0,0,200))
+                for i in range(((row-self.player.x)+ (col-self.player.y))//2):
+                    dark.fill((0,0,0,200))
+                    self.display.blit(dark,(col*self.tilewid*(col+1),row*self.tilehei*(row+1)))

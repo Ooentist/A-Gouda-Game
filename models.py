@@ -3,8 +3,8 @@ from spritesheet import *
 from utils import *
 Ppath='./assets/3 Dude_Monster'
 enpath='./assets/2 Owlet_Monster'
-flrpath='./assets/newflr.png'
-wallpath='./assets/floor.jpg'
+flrpath='./assets/newwaller.png'
+wallpath='./assets/newflr.png'
 holepath='./assets/hole.png'
 move_frames=20
 class Object:
@@ -115,9 +115,11 @@ class Player(Object):
                 newx+=1
                 newoffx-=1
                 self.direction='right'
+        else:
+            return False
             
         if newx >=0 and newx<num_cols and newy>=0 and newy<num_rows:
-            if  map[newx][newy]==0:
+            if not isinstance(map[newx][newy],Wall):
                 map[newx][newy]= map[self.x][self.y]
                 map[self.x][self.y]=0
                 self.x=newx
@@ -140,11 +142,13 @@ class Enemy(Object):
         self.animations={'idle':Animation(loadsheet(enpath+'/Owlet_Monster_Idle_4.png',32,32,scale),speed=10),'walk':Animation(loadsheet(enpath+'/Owlet_Monster_Walk_6.png',32,32,scale),speed=8)}
         self.state='idle'
         self.direction='right'   
+   
     
     def draw(self,surface):
         frame=self.animations[self.state].getframe()
         if self.direction=='left':
             frame=pygame.transform.flip(frame,True,False)
+
         surface.blit(frame,(self.drawx*self.tilewid,self.drawy*self.tilehei))
     def moveran(self,game_map):
         directions=[(0,-1),(0,1),(-1,0),(1,0)]
@@ -206,3 +210,4 @@ class Hole(Object):
         pass
     def draw(self,surface):
         surface.blit(self.sprite,(self.x*self.tilewid,self.y*self.tilehei+self.tilehei/3))
+    
